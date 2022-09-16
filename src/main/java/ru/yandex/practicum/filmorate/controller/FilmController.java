@@ -7,7 +7,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
 import javax.validation.ValidationException;
@@ -21,8 +20,8 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class FilmController {
-    int id = 1;
-    Map<Integer, Film> films = new HashMap<>();
+    private Long id = 1L;
+    private Map<Long, Film> films = new HashMap<>();
     @GetMapping("/films")
     public List<Film> findAll() {
         return new ArrayList<>(films.values());
@@ -30,36 +29,28 @@ public class FilmController {
 
     @PostMapping("/films")
     public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
-        if (film.getId() == null) {
-            log.info("Add:" + film);
             checkRelease(film);
             film.setId(id);
             films.put(id, film);
+            log.info("Add:" + film);
             id++;
             return ResponseEntity.ok(film);
-        } else {
-            return new ResponseEntity<Film>(HttpStatus.NOT_FOUND);
-        }
     }
 
     @PutMapping("/films")
     public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
-        Integer idNewFilm = film.getId();
+        Long idNewFilm = film.getId();
         if (idNewFilm == null) {
-            log.info("Add:" + film);
             checkRelease(film);
             film.setId(id);
             films.put(id, film);
+            log.info("Add:" + film);
             id++;
             return ResponseEntity.ok(film);
         } else if (films.containsKey(idNewFilm)){
             checkRelease(film);
-            Film oldFilm = films.get(idNewFilm);
-            log.info("Update:" + oldFilm + " to:" + film);
-            oldFilm.setDescription(film.getDescription());
-            oldFilm.setName(film.getName());
-            oldFilm.setReleaseDate(film.getReleaseDate());
-            oldFilm.setDuration(film.getDuration());
+            films.put(film.getId(),film);
+            log.info("Update:" + film + " to:" + film);
             return ResponseEntity.ok(film);
         } else {
             log.error("Поступил запрос на редактирование фильма, которого нет");

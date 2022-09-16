@@ -19,8 +19,8 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class UserController {
-    Integer id = 1;
-    Map<Integer, User> users = new HashMap<>();
+    private Long id = 1L;
+    private Map<Long, User> users = new HashMap<>();
 
     @GetMapping("/users")
     public List<User> findAll() {
@@ -30,36 +30,27 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
         checkName(user);
-        if (user.getId() == null) {
-            log.info("Add:" + user);
             user.setId(id);
             users.put(id, user);
+            log.info("Add:" + user);
             id++;
             return ResponseEntity.ok(user);
-        } else {
-            log.error("Поступил запрос на создание пользователя с id");
-            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
-        }
     }
 
     @PutMapping("/users")
     public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
-        Integer idNewUser = user.getId();
+        Long idNewUser = user.getId();
         checkName(user);
         if (idNewUser == null) {
-            log.info("Add:" + user);
             user.setId(id);
             users.put(id, user);
+            log.info("Add:" + user);
             id++;
             return ResponseEntity.ok(user);
         } else if(users.containsKey(idNewUser)){
-            User oldUser = users.get(idNewUser);
-            log.info("Update: " + oldUser + "to:" + user);
-            oldUser.setName(user.getName());
-            oldUser.setEmail(user.getEmail());
-            oldUser.setLogin(user.getLogin());
-            oldUser.setBirthday(user.getBirthday());
-            return ResponseEntity.ok(oldUser);
+            users.put(user.getId(),user);
+            log.info("Update: " + user + "to:" + user);
+            return ResponseEntity.ok(user);
         }else {
             log.error("Поступил запрос на редактирование пользователя, которого нет.");
             return new ResponseEntity<User>(HttpStatus.NOT_FOUND);

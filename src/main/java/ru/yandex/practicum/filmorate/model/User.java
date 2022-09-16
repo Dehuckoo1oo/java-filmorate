@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Validated
 public class User {
 
-    private Integer id;
+    private Long id;
     @NotBlank(message = "Необходимо указать Email")
     @Email(message = "Email указан не корректно")
     private String email;

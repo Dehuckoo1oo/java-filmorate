@@ -23,7 +23,7 @@ class UserTest {
 
             Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
             User user = new User(null, null, null,
-                    null, LocalDate.of(2099, 1, 1),new HashSet<Long>());
+                    null, LocalDate.of(2099, 1, 1));
 
             Set<ConstraintViolation<User>> violationsUser = validator.validate(user);
 
@@ -41,7 +41,7 @@ class UserTest {
             }
 
             user = new User(null, "Denis", "Denis",
-                    null, LocalDate.of(1997, 2, 26),new HashSet<Long>());
+                    null, LocalDate.of(1997, 2, 26));
 
             Set<ConstraintViolation<User>> violationsUserSecond = validator.validate(user);
             ConstraintViolation<User> violationUserSecond = violationsUser.stream()

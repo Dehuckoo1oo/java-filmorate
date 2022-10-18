@@ -3,12 +3,15 @@ package ru.yandex.practicum.filmorate.model;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,7 +23,7 @@ class UserTest {
 
             Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
             User user = new User(null, null, null,
-                    null, LocalDate.of(2099, 1, 1));
+                    null, LocalDate.of(2099, 1, 1),new HashSet<Long>());
 
             Set<ConstraintViolation<User>> violationsUser = validator.validate(user);
 
@@ -38,7 +41,7 @@ class UserTest {
             }
 
             user = new User(null, "Denis", "Denis",
-                    null, LocalDate.of(1997, 2, 26));
+                    null, LocalDate.of(1997, 2, 26),new HashSet<Long>());
 
             Set<ConstraintViolation<User>> violationsUserSecond = validator.validate(user);
             ConstraintViolation<User> violationUserSecond = violationsUser.stream()
@@ -47,7 +50,7 @@ class UserTest {
                     .orElseThrow(() -> new RuntimeException("Отсутствует ошибка валидации"));
             assertEquals("email", violationUserSecond.getPropertyPath().toString());
             assertEquals("Необходимо указать Email", violationUserSecond.getMessageTemplate());
-            UserController userController = new UserController();
+            UserController userController = new UserController(new UserService(new InMemoryUserStorage()));
             userController.addUser(user);
             assertEquals(user.getName(),"Denis");
         }

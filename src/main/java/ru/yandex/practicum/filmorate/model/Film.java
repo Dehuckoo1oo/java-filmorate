@@ -5,6 +5,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,5 +24,21 @@ public class Film {
     private LocalDate releaseDate;
     @PositiveOrZero(message = "Длительность не может быть меньше 0")
     private int duration;
+    private final Set<Long> likes = new HashSet<>();
 
+    public Film like(Long id) {
+        likes.add(id);
+        return this;
+    }
+
+    public Film removeLike(Long id){
+        likes.remove(id);
+        return this;
+    }
+
+    public int countLikes(){
+        return likes.size();
+    }
 }
+
+

@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.Exception;
 
-import java.io.IOException;
 
-public class UserNotFoundException extends IOException {
+public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException() {
     }
 

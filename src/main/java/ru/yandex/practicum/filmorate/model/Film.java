@@ -31,12 +31,12 @@ public class Film {
         return this;
     }
 
-    public Film removeLike(Long id){
+    public Film removeLike(Long id) {
         likes.remove(id);
         return this;
     }
 
-    public int countLikes(){
+    public int countLikes() {
         return likes.size();
     }
 }

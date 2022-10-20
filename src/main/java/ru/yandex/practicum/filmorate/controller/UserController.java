@@ -5,15 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.Exception.NotValidArgumentException;
-import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import java.util.*;
 
 @Validated
@@ -21,7 +17,7 @@ import java.util.*;
 @Slf4j
 public class UserController {
 
-    UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -36,47 +32,22 @@ public class UserController {
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<User> findUser(@PathVariable Long userId) {
-        try {
-            return ResponseEntity.ok(userService.getUserById(userId));
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 
     @GetMapping("/users/{id}/friends")
     public ResponseEntity<List<User>> findFriendList(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(userService.getFriendList(id));
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return ResponseEntity.ok(userService.getFriendList(id));
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
     public ResponseEntity<List<User>> findMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
-        try {
-            return ResponseEntity.ok(userService.mutualFriends(id,otherId));
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return ResponseEntity.ok(userService.mutualFriends(id, otherId));
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
     public ResponseEntity<User> deleteFromFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        try {
-            return ResponseEntity.ok(userService.deleteFriends(id, friendId));
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PutMapping("/users/{id}/friends/{friendId}")
-    public ResponseEntity<User> addToFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        try {
-            return ResponseEntity.ok(userService.addFriends(id, friendId));
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return ResponseEntity.ok(userService.deleteFriends(id, friendId));
     }
 
     @GetMapping("/users")
@@ -101,22 +72,8 @@ public class UserController {
         }
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class})
-    public ResponseEntity<String> handleException(MethodArgumentNotValidException e) {
-        log.info(e.getMessage());
-        return ResponseEntity.badRequest().body(e.getMessage());
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public ResponseEntity<User> addToFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        return ResponseEntity.ok(userService.addFriends(id, friendId));
     }
-
-    @ExceptionHandler({ValidationException.class})
-    public ResponseEntity<String> handleException(ValidationException e) {
-        log.info(e.getMessage());
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
-    @ExceptionHandler({NotValidArgumentException.class})
-    public ResponseEntity<String> handleException(NotValidArgumentException e) {
-        log.info(e.getMessage());
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
 }

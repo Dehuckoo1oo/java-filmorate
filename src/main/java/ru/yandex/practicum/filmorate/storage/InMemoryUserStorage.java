@@ -17,27 +17,20 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public Optional<User> update(User user) {
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.info("Update: " + user + "to:" + user);
-            return Optional.of(user);
-        } else {
-            log.error("Поступил запрос на редактирование пользователя, которого нет.");
-            return Optional.empty();
-        }
+    public User update(User user) {
+        users.put(user.getId(), user);
+        return user;
     }
 
     @Override
-    public Optional<User> delete(User user) {
-        return Optional.of(users.remove(user.getId()));
+    public User delete(User user) {
+        return users.remove(user.getId());
     }
 
     @Override
     public User create(User user) {
         user.setId(id);
         users.put(id, user);
-        log.info("Add:" + user);
         id++;
         return user;
     }
@@ -49,10 +42,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Optional<User> getUserById(Long id) {
-        if (users.containsKey(id)) {
-            return Optional.of(users.get(id));
-        } else {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(users.get(id));
     }
+
 }

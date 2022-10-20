@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
@@ -11,10 +12,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class UserService {
 
-    UserStorage userStorage;
+    private final UserStorage userStorage;
 
     @Autowired
     public UserService(UserStorage userStorage) {
@@ -43,37 +45,46 @@ public class UserService {
         Set<Long> friendList1 = usr1.getFriends();
         Set<Long> friendList2 = usr2.getFriends();
         List<User> matualFriends = new ArrayList<>();
-        if (friendList1 != null && friendList2 != null) {
-            for (Long i : friendList1) {
-                if (friendList2.contains(i)) {
-                    matualFriends.add(getUserById(i));
-                }
-            }
-        }
+        friendList1.stream()
+                .filter(friendList2::contains)
+                .forEach(value -> {
+                    try {
+                        matualFriends.add(getUserById(value));
+                    } catch (UserNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
         return matualFriends;
     }
 
     public List<User> getFriendList(Long userId) throws UserNotFoundException {
         User user = checkUser(userId);
         List<User> friendsList = new ArrayList<>();
-        for (Long usrID : user.getFriends()) {
-            friendsList.add(getUserById(usrID));
-        }
+        user.getFriends().forEach(value -> {
+            try {
+                friendsList.add(getUserById(value));
+            } catch (UserNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        });
         return friendsList;
     }
 
 
-    public Optional<User> update(User user) {
+    public Optional<User> update(User user) throws UserNotFoundException {
         checkName(user);
-        return userStorage.update(user);
+        checkUser(user.getId());
+        log.info("Update: " + user + "to:" + user);
+        return Optional.ofNullable(userStorage.update(user));
     }
 
     public Optional<User> delete(User user) {
-        return userStorage.delete(user);
+        return Optional.ofNullable(userStorage.delete(user));
     }
 
     public User create(User user) {
         checkName(user);
+        log.info("Add:" + user);
         return userStorage.create(user);
     }
 
@@ -97,8 +108,6 @@ public class UserService {
             return usr.get();
         } else {
             throw new UserNotFoundException("Пользователь не найден");
-
         }
     }
-
 }

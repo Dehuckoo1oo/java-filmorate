@@ -12,7 +12,7 @@ import java.util.Set;
 @Setter
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor()
+@AllArgsConstructor
 @Validated
 public class User {
     private Long id;
@@ -26,15 +26,15 @@ public class User {
     private LocalDate birthday;
     private final Set<Long> friends = new HashSet<>();
 
-    public void addFriend(Long id){
+    public void addFriend(Long id) {
         friends.add(id);
     }
 
-    public void deleteFriend(Long id){
+    public void deleteFriend(Long id) {
         friends.remove(id);
     }
 
-    public int countFriends(){
+    public int countFriends() {
         return friends.size();
     }
 }

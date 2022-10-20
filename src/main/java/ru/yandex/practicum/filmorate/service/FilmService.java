@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.ApplicationScope;
@@ -17,12 +18,19 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @ApplicationScope
 public class FilmService {
 
-    FilmStorage filmStorage;
-    UserService userService;
+    private final FilmStorage filmStorage;
+    private final UserService userService;
+    private final Comparator<Film> comparator = new Comparator<Film>() {
+        @Override
+        public int compare(Film o1, Film o2) {
+            return o2.countLikes() - o1.countLikes();
+        }
+    };
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserService userService) {
@@ -30,8 +38,10 @@ public class FilmService {
         this.userService = userService;
     }
 
-    public Optional<Film> update(Film film) {
+    public Optional<Film> update(Film film) throws FilmNotFoundException {
         checkRelease(film);
+        checkFilm(film.getId());
+        log.info("Update:" + film + " to:" + film);
         return filmStorage.update(film);
     }
 
@@ -52,6 +62,7 @@ public class FilmService {
         Film film = checkFilm(filmId);
         User user = userService.getUserById(userId);
         film.like(user.getId());
+        filmStorage.update(film);
         return film;
     }
 
@@ -59,6 +70,7 @@ public class FilmService {
         Film film = checkFilm(filmId);
         User user = userService.getUserById(userId);
         film.removeLike(user.getId());
+        filmStorage.update(film);
         return film;
     }
 
@@ -68,7 +80,7 @@ public class FilmService {
         return topFilms;
     }
 
-    public Optional<Film> getFilmById(Long id){
+    public Optional<Film> getFilmById(Long id) {
         return filmStorage.getFilmById(id);
     }
 
@@ -80,18 +92,10 @@ public class FilmService {
 
     private Film checkFilm(Long filmId) throws FilmNotFoundException {
         Optional<Film> film = filmStorage.getFilmById(filmId);
-        if(film.isPresent()){
+        if (film.isPresent()) {
             return film.get();
         } else {
             throw new FilmNotFoundException("Данный фильм не найден");
         }
     }
-
-    Comparator<Film> comparator = new Comparator<Film>(){
-        @Override
-        public int compare(Film o1, Film o2) {
-            return o2.countLikes()  - o1.countLikes();
-        }
-    };
-
 }

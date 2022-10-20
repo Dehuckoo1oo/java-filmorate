@@ -9,9 +9,9 @@ import java.util.Optional;
 
 @Component
 public interface UserStorage {
-    public Optional<User> update(User user);
+    public User update(User user);
 
-    public Optional<User> delete(User user);
+    public User delete(User user);
 
     public User create(User user);
 

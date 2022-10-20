@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.Exception;
 
 import java.io.IOException;
 
-public class FilmNotFoundException extends IOException {
+public class FilmNotFoundException extends RuntimeException {
     public FilmNotFoundException() {
     }
 

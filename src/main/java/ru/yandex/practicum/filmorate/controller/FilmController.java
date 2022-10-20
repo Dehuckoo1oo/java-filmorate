@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -64,7 +63,7 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) throws FilmNotFoundException {
+    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film){
         Long idNewFilm = film.getId();
         if (idNewFilm == null) {
             return ResponseEntity.ok(filmService.create(film));

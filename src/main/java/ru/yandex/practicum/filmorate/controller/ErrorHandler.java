@@ -7,7 +7,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.Exception.NotValidArgumentException;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
 
 import javax.validation.ValidationException;
@@ -36,12 +35,6 @@ public class ErrorHandler {
 
     @ExceptionHandler({ValidationException.class})
     public ResponseEntity<String> handleException(ValidationException e) {
-        log.info(e.getMessage());
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
-    @ExceptionHandler({NotValidArgumentException.class})
-    public ResponseEntity<String> handleException(NotValidArgumentException e) {
         log.info(e.getMessage());
         return ResponseEntity.badRequest().body(e.getMessage());
     }

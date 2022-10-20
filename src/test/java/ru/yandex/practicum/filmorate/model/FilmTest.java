@@ -42,7 +42,7 @@ class FilmTest {
             assertEquals(test.getValue(), violation.getMessageTemplate());
         }
         FilmController filmcontroller = new FilmController(
-                new FilmService(new InMemoryFilmStorage(), new UserService(new InMemoryUserStorage())));
+                new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
 
         final ValidationException exception = assertThrows(
                 ValidationException.class,

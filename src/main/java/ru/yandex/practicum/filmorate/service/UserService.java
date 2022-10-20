@@ -23,7 +23,7 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public User addFriends(Long id1, Long id2) throws UserNotFoundException {
+    public User addFriends(Long id1, Long id2) {
         User usr1 = checkUser(id1);
         User usr2 = checkUser(id2);
         usr1.addFriend(usr2.getId());
@@ -31,7 +31,7 @@ public class UserService {
         return usr1;
     }
 
-    public User deleteFriends(Long id1, Long id2) throws UserNotFoundException {
+    public User deleteFriends(Long id1, Long id2) {
         User usr1 = checkUser(id1);
         User usr2 = checkUser(id2);
         usr1.deleteFriend(usr2.getId());
@@ -39,7 +39,7 @@ public class UserService {
         return usr1;
     }
 
-    public List<User> mutualFriends(Long id1, Long id2) throws UserNotFoundException {
+    public List<User> mutualFriends(Long id1, Long id2) {
         User usr1 = checkUser(id1);
         User usr2 = checkUser(id2);
         Set<Long> friendList1 = usr1.getFriends();
@@ -57,21 +57,15 @@ public class UserService {
         return matualFriends;
     }
 
-    public List<User> getFriendList(Long userId) throws UserNotFoundException {
+    public List<User> getFriendList(Long userId) {
         User user = checkUser(userId);
         List<User> friendsList = new ArrayList<>();
-        user.getFriends().forEach(value -> {
-            try {
-                friendsList.add(getUserById(value));
-            } catch (UserNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        user.getFriends().forEach(value -> friendsList.add(getUserById(value)));
         return friendsList;
     }
 
 
-    public Optional<User> update(User user) throws UserNotFoundException {
+    public Optional<User> update(User user) {
         checkName(user);
         checkUser(user.getId());
         log.info("Update: " + user + "to:" + user);
@@ -92,7 +86,7 @@ public class UserService {
         return userStorage.get();
     }
 
-    public User getUserById(Long id) throws UserNotFoundException {
+    public User getUserById(Long id) {
         return checkUser(id);
     }
 
@@ -102,7 +96,7 @@ public class UserService {
         }
     }
 
-    private User checkUser(Long id) throws UserNotFoundException {
+    private User checkUser(Long id) {
         Optional<User> usr = userStorage.getUserById(id);
         if (usr.isPresent()) {
             return usr.get();

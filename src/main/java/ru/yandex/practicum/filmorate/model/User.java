@@ -33,8 +33,4 @@ public class User {
     public void deleteFriend(Long id) {
         friends.remove(id);
     }
-
-    public int countFriends() {
-        return friends.size();
-    }
 }

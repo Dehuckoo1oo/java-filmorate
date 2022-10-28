@@ -5,6 +5,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -13,7 +15,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Validated
 public class User {
-
     private Long id;
     @NotBlank(message = "Необходимо указать Email")
     @Email(message = "Email указан не корректно")
@@ -23,4 +24,17 @@ public class User {
     private String name;
     @Past(message = "Некорректная дата рождения")
     private LocalDate birthday;
+    private final Map<Long,Boolean> friends = new HashMap<>();
+
+    public void addFriend(Long id,Boolean isConfirmed) {
+        if(friends.getOrDefault(id,false)){
+            friends.put(id,true);
+        } else {
+            friends.put(id,isConfirmed);
+        }
+    }
+
+    public void deleteFriend(Long id) {
+        friends.remove(id);
+    }
 }

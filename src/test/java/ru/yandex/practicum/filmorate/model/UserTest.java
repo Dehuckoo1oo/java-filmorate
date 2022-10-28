@@ -3,12 +3,15 @@ package ru.yandex.practicum.filmorate.model;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,7 +50,7 @@ class UserTest {
                     .orElseThrow(() -> new RuntimeException("Отсутствует ошибка валидации"));
             assertEquals("email", violationUserSecond.getPropertyPath().toString());
             assertEquals("Необходимо указать Email", violationUserSecond.getMessageTemplate());
-            UserController userController = new UserController();
+            UserController userController = new UserController(new UserService(new InMemoryUserStorage()));
             userController.addUser(user);
             assertEquals(user.getName(),"Denis");
         }

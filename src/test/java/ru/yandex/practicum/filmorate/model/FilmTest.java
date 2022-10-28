@@ -3,6 +3,10 @@ package ru.yandex.practicum.filmorate.model;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -37,7 +41,8 @@ class FilmTest {
             assertEquals(test.getKey(), violation.getPropertyPath().toString());
             assertEquals(test.getValue(), violation.getMessageTemplate());
         }
-        FilmController filmcontroller = new FilmController();
+        FilmController filmcontroller = new FilmController(
+                new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
 
         final ValidationException exception = assertThrows(
                 ValidationException.class,

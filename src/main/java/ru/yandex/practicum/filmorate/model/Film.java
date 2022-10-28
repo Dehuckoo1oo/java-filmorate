@@ -24,6 +24,8 @@ public class Film {
     private LocalDate releaseDate;
     @PositiveOrZero(message = "Длительность не может быть меньше 0")
     private int duration;
+    private final Set<String> genre = new HashSet<>();
+    private final Set<String> MPA = new HashSet<>();
     private final Set<Long> likes = new HashSet<>();
 
     public Film like(Long id) {
@@ -38,6 +40,14 @@ public class Film {
 
     public int countLikes() {
         return likes.size();
+    }
+
+    public void addGenre(String filmGenre){
+        genre.add(filmGenre);
+    }
+
+    public void addMPA(String MPARating){
+        MPA.add(MPARating);
     }
 }
 

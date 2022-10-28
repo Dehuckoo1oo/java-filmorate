@@ -5,8 +5,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -24,10 +24,14 @@ public class User {
     private String name;
     @Past(message = "Некорректная дата рождения")
     private LocalDate birthday;
-    private final Set<Long> friends = new HashSet<>();
+    private final Map<Long,Boolean> friends = new HashMap<>();
 
-    public void addFriend(Long id) {
-        friends.add(id);
+    public void addFriend(Long id,Boolean isConfirmed) {
+        if(friends.getOrDefault(id,false)){
+            friends.put(id,true);
+        } else {
+            friends.put(id,isConfirmed);
+        }
     }
 
     public void deleteFriend(Long id) {

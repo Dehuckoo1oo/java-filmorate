@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -26,8 +23,8 @@ public class UserService {
     public User addFriends(Long id1, Long id2) {
         User usr1 = checkUser(id1);
         User usr2 = checkUser(id2);
-        usr1.addFriend(usr2.getId());
-        usr2.addFriend(usr1.getId());
+        usr1.addFriend(usr2.getId(),true);
+        usr2.addFriend(usr1.getId(),false);
         return usr1;
     }
 
@@ -42,25 +39,27 @@ public class UserService {
     public List<User> mutualFriends(Long id1, Long id2) {
         User usr1 = checkUser(id1);
         User usr2 = checkUser(id2);
-        Set<Long> friendList1 = usr1.getFriends();
-        Set<Long> friendList2 = usr2.getFriends();
+        ArrayList<Long> friendList1 = new ArrayList<>();
+        ArrayList<Long> friendList2 = new ArrayList<>();
+        usr1.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .forEach(entity -> friendList1.add(entity.getKey()));
+        usr2.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .forEach(entity -> friendList2.add(entity.getKey()));
         List<User> matualFriends = new ArrayList<>();
         friendList1.stream()
                 .filter(friendList2::contains)
-                .forEach(value -> {
-                    try {
-                        matualFriends.add(getUserById(value));
-                    } catch (UserNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                .forEach(value -> matualFriends.add(getUserById(value)));
         return matualFriends;
     }
 
     public List<User> getFriendList(Long userId) {
         User user = checkUser(userId);
         List<User> friendsList = new ArrayList<>();
-        user.getFriends().forEach(value -> friendsList.add(getUserById(value)));
+        user.getFriends().entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .forEach(value -> friendsList.add(getUserById(value.getKey())));
         return friendsList;
     }
 

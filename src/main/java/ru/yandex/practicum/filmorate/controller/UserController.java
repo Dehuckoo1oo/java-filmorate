@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @DeleteMapping("/users")
-    public ResponseEntity<User> delete(User user) {
+    public ResponseEntity<User> delete(@Valid @RequestBody User user) {
         Optional<User> entity = userService.delete(user);
         return entity.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }

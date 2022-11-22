@@ -12,9 +12,7 @@ import java.util.*;
 @Slf4j
 @Service
 public class UserService {
-
     private final UserStorage userStorage;
-
     @Autowired
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
@@ -25,6 +23,8 @@ public class UserService {
         User usr2 = checkUser(id2);
         usr1.addFriend(usr2.getId(),true);
         usr2.addFriend(usr1.getId(),false);
+        userStorage.update(usr1);
+        userStorage.update(usr2);
         return usr1;
     }
 
@@ -33,6 +33,8 @@ public class UserService {
         User usr2 = checkUser(id2);
         usr1.deleteFriend(usr2.getId());
         usr2.deleteFriend(usr1.getId());
+        userStorage.update(usr1);
+        userStorage.update(usr2);
         return usr1;
     }
 
@@ -81,7 +83,7 @@ public class UserService {
         return userStorage.create(user);
     }
 
-    public ArrayList<User> get() {
+    public List<User> get() {
         return userStorage.get();
     }
 

@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 import org.springframework.validation.annotation.Validated;
-
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -36,5 +35,14 @@ public class User {
 
     public void deleteFriend(Long id) {
         friends.remove(id);
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("EMAIL", email);
+        values.put("LOGIN", login);
+        values.put("NAME", name);
+        values.put("BIRTHDAY", birthday);
+        return values;
     }
 }

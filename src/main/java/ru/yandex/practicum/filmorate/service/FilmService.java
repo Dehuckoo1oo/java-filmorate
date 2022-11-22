@@ -2,11 +2,15 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.ApplicationScope;
 import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -91,6 +95,22 @@ public class FilmService {
         return filmStorage.getFilmById(id);
     }
 
+    public Optional<Genre> getGenreById(int id){
+        return filmStorage.getGenreById(id);
+    }
+
+    public Optional<MPA> getMPAById(int id){
+        return filmStorage.getMPAById(id);
+    }
+
+    public List<Genre> getGenre() {
+        return filmStorage.getGenre();
+    }
+
+    public List<MPA> getMPA() {
+        return filmStorage.getMPA();
+    }
+
     private void checkRelease(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Дата выхода фильма некорректна");
@@ -98,6 +118,9 @@ public class FilmService {
     }
 
     private Film checkFilm(Long filmId) {
+        if (filmId == null){
+            throw new FilmNotFoundException("Фильма с таким id не существует");
+        }
         Optional<Film> film = filmStorage.getFilmById(filmId);
         if (film.isPresent()) {
             return film.get();
@@ -105,4 +128,6 @@ public class FilmService {
             throw new FilmNotFoundException("Данный фильм не найден");
         }
     }
+
+
 }

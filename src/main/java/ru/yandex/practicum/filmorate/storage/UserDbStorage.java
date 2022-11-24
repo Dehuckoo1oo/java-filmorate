@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserMapper;
 
@@ -13,7 +13,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
 
-@Component
+@Repository
 @Primary
 public class UserDbStorage implements UserStorage {
 
@@ -37,13 +37,13 @@ public class UserDbStorage implements UserStorage {
             return stmt;
         }, keyHolder);
         user.setId(keyHolder.getKey().longValue());
-        Map<Long, Boolean> friends = user.getFriends();
+        Set<Long> friends = user.getFriends();
         if (!friends.isEmpty()) {
             String sqlQueryFriends = "INSERT INTO PUBLIC.FRIEND_LIST " +
-                    "(USER_ID, FRIEND_ID, ISACCEPTREQUEST)" +
-                    "VALUES(?, ?, ?);";
-            for (Map.Entry<Long, Boolean> friend : friends.entrySet()) {
-                jdbcTemplate.update(sqlQueryFriends, user.getId(), friend.getKey(), friend.getValue());
+                    "(USER_ID, FRIEND_ID)" +
+                    "VALUES(?, ?);";
+            for (Long friend : friends) {
+                jdbcTemplate.update(sqlQueryFriends, user.getId(), friend);
             }
         }
         return user;
@@ -57,14 +57,14 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update(sqlQuery, user.getEmail(), user.getLogin(), user.getName(),
                 Date.valueOf(user.getBirthday()), user.getId());
         String sqlQueryFriends = "INSERT INTO PUBLIC.FRIEND_LIST" +
-                "(USER_ID, FRIEND_ID, ISACCEPTREQUEST)" +
-                "VALUES(?, ?, ?);";
+                "(USER_ID, FRIEND_ID)" +
+                "VALUES(?, ?);";
         String sqlQueryDelFriends = "DELETE FROM PUBLIC.FRIEND_LIST WHERE USER_ID=?";
-        Map<Long, Boolean> friends = user.getFriends();
+        Set<Long> friends = user.getFriends();
         if (!friends.isEmpty()) {
             jdbcTemplate.update(sqlQueryDelFriends, user.getId());
-            for (Map.Entry<Long, Boolean> friend : friends.entrySet()) {
-                jdbcTemplate.update(sqlQueryFriends, user.getId(), friend.getKey(), friend.getValue());
+            for (Long friend : friends) {
+                jdbcTemplate.update(sqlQueryFriends, user.getId(), friend);
             }
         } else {
             jdbcTemplate.update(sqlQueryDelFriends, user.getId());
@@ -79,12 +79,36 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-    @Override
+
+    /*@Override
     public List<User> get() {
         // метод принимает в виде аргумента строку запроса, преобразователь и аргумент — id пользователя
         String sql = "SELECT * FROM PUBLIC.USERS";
         List<User> users = jdbcTemplate.query(sql, new UserMapper());
         users.forEach(this::fillFriends);
+        return users;
+    }*/
+
+
+    @Override
+    public List<User> get() {
+        String sql = "SELECT * FROM PUBLIC.USERS";
+        List<User> users = jdbcTemplate.query(sql, new UserMapper());
+        String sqlFriend = "SELECT user_id,friend_id FROM PUBLIC.friend_list";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlFriend);
+        Map<Long, Set<Long>> friends = new HashMap<>();
+        while (rs.next()) {
+            Long userId = rs.getLong("user_id");
+            Long friendId = rs.getLong("friend_id");
+            if (friends.containsKey(userId)) {
+                friends.get(userId).add(friendId);
+            } else {
+                Set<Long> friendEntity = new HashSet<>();
+                friendEntity.add(friendId);
+                friends.put(userId, friendEntity);
+            }
+        }
+        users.forEach(user -> user.setFriends(friends.getOrDefault(user.getId(), new HashSet<>())));
         return users;
     }
 
@@ -97,10 +121,10 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void fillFriends(User user) {
-        String sql = "SELECT friend_id,isAcceptRequest FROM PUBLIC.friend_list WHERE user_id=?";
+        String sql = "SELECT friend_id FROM PUBLIC.friend_list WHERE user_id=?";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, user.getId());
         while (rs.next()) {
-            user.addFriend(rs.getLong("friend_id"), rs.getBoolean("isAcceptRequest"));
+            user.addFriend(rs.getLong("friend_id"));
         }
     }
 }

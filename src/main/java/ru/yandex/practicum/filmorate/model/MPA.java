@@ -11,9 +11,8 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor
-@Validated
 public class MPA {
     @NotNull
-    int id;
+    Integer id;
     String name;
 }

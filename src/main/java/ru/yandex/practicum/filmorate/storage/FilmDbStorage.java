@@ -1,22 +1,23 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-@Component
+@Repository
 @Primary
 public class FilmDbStorage implements FilmStorage {
 
@@ -46,7 +47,7 @@ public class FilmDbStorage implements FilmStorage {
         Long filmId = film.getId();
         MPA mpa = film.getMpa();
         List<Genre> genre = film.getGenres();
-        Set<Long> likes = film.getLikes();
+        List<Long> likes = new ArrayList<>(film.getLikes());
         jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), Date.valueOf(film.getReleaseDate()),
                 film.getDuration(), film.getId());
         jdbcTemplate.update(sqlQueryDelMPA, filmId);
@@ -54,14 +55,36 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQueryDelGenre, filmId);
         jdbcTemplate.update(sqlQueryDelLikes, filmId);
         if (genre != null) {
-            for (Genre gnr : genre) {
-                jdbcTemplate.update(sqlQueryGenre, filmId, gnr.getId());
-            }
+            jdbcTemplate.batchUpdate(
+                    sqlQueryGenre,
+                    new BatchPreparedStatementSetter() {
+
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setLong(1, filmId);
+                            ps.setInt(2, genre.get(i).getId());
+                        }
+
+                        public int getBatchSize() {
+                            return genre.size();
+                        }
+
+                    });
         }
         if (!likes.isEmpty()) {
-            for (Long like : likes) {
-                jdbcTemplate.update(sqlQueryLikes, filmId, like);
-            }
+            jdbcTemplate.batchUpdate(
+                    sqlQueryLikes,
+                    new BatchPreparedStatementSetter() {
+
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setLong(1, filmId);
+                            ps.setLong(2, likes.get(i));
+                        }
+
+                        public int getBatchSize() {
+                            return likes.size();
+                        }
+
+                    });
         }
         return getFilmById(film.getId());
     }
@@ -99,9 +122,20 @@ public class FilmDbStorage implements FilmStorage {
             String sqlQueryGenre = "MERGE INTO PUBLIC.genre_film " +
                     "(film_id, genre_id)" +
                     "VALUES(?, ?);";
-            for (Genre gnr : genre) {
-                jdbcTemplate.update(sqlQueryGenre, filmId, gnr.getId());
-            }
+            jdbcTemplate.batchUpdate(
+                    sqlQueryGenre,
+                    new BatchPreparedStatementSetter() {
+
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setLong(1, filmId);
+                            ps.setInt(2, genre.get(i).getId());
+                        }
+
+                        public int getBatchSize() {
+                            return genre.size();
+                        }
+
+                    });
         }
         return film;
     }

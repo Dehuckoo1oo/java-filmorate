@@ -11,7 +11,6 @@ import javax.validation.constraints.NotNull;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
-@Validated
 public class Genre {
     int id;
     String name;

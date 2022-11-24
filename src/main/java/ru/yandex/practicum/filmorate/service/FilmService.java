@@ -2,8 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.ApplicationScope;
 import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
@@ -19,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 import javax.validation.ValidationException;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +65,7 @@ public class FilmService {
     public Film addLike(Long filmId, Long userId) {
         Film film = checkFilm(filmId);
         Optional<User> user = userStorage.getUserById(userId);
-        if(user.isEmpty()){
+        if (user.isEmpty()) {
             throw new UserNotFoundException("Пользователь не найден");
         }
         film.like(user.get().getId());
@@ -77,7 +76,7 @@ public class FilmService {
     public Film removeLike(Long filmId, Long userId) {
         Film film = checkFilm(filmId);
         Optional<User> user = userStorage.getUserById(userId);
-        if(user.isEmpty()){
+        if (user.isEmpty()) {
             throw new UserNotFoundException("Пользователь не найден");
         }
         film.removeLike(user.get().getId());
@@ -95,11 +94,11 @@ public class FilmService {
         return filmStorage.getFilmById(id);
     }
 
-    public Optional<Genre> getGenreById(int id){
+    public Optional<Genre> getGenreById(int id) {
         return filmStorage.getGenreById(id);
     }
 
-    public Optional<MPA> getMPAById(int id){
+    public Optional<MPA> getMPAById(int id) {
         return filmStorage.getMPAById(id);
     }
 
@@ -117,10 +116,7 @@ public class FilmService {
         }
     }
 
-    private Film checkFilm(Long filmId) {
-        if (filmId == null){
-            throw new FilmNotFoundException("Фильма с таким id не существует");
-        }
+    private Film checkFilm(@NotNull(message = "Фильма с таким id не существует") Long filmId) {
         Optional<Film> film = filmStorage.getFilmById(filmId);
         if (film.isPresent()) {
             return film.get();

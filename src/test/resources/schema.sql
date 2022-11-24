@@ -20,7 +20,6 @@ CREATE TABLE users (
 CREATE TABLE friend_list (
                              user_id long NOT NULL,
                              friend_id long,
-                             isAcceptRequest boolean,
                              PRIMARY KEY (user_id, friend_id)
 );
 

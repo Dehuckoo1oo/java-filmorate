@@ -14,7 +14,6 @@ import java.util.Set;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
-@Validated
 public class Film {
 
     private Long id;

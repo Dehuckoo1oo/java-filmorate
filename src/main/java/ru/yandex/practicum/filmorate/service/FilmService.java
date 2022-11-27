@@ -3,9 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.annotation.ApplicationScope;
 import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.controller.userError;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -16,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import javax.validation.Validation;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -90,8 +93,8 @@ public class FilmService {
         return topFilms;
     }
 
-    public Optional<Film> getFilmById(Long id) {
-        return filmStorage.getFilmById(id);
+    public Film getFilmById(Long id) {
+        return checkFilm(id);
     }
 
     public Optional<Genre> getGenreById(int id) {
@@ -121,9 +124,7 @@ public class FilmService {
         if (film.isPresent()) {
             return film.get();
         } else {
-            throw new FilmNotFoundException("Данный фильм не найден");
+            throw new FilmNotFoundException(new userError(List.of("user id=" + filmId + " не существует")).toString());
         }
     }
-
-
 }

@@ -55,8 +55,7 @@ public class FilmController {
 
     @GetMapping("/films/{filmId}")
     public ResponseEntity<Film> findFilm(@PathVariable Long filmId) {
-        Optional<Film> entity = filmService.getFilmById(filmId);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return ResponseEntity.ok(filmService.getFilmById(filmId));
     }
 
     @PostMapping("/films")

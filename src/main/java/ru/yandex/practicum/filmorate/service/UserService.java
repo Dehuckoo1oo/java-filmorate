@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.controller.userError;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -91,7 +92,7 @@ public class UserService {
         if (usr.isPresent()) {
             return usr.get();
         } else {
-            throw new UserNotFoundException("Пользователь не найден");
+            throw new UserNotFoundException(new userError(List.of("user id=" + id + " не существует")).toString());
         }
     }
 }

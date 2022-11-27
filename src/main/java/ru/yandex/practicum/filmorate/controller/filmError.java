@@ -11,9 +11,9 @@ import java.util.List;
 @Getter
 @ToString
 public class filmError {
-    List<String> errors;
+    String errors;
 
-    public filmError(List<String> errors) {
+    public filmError(String errors) {
         this.errors = errors;
     }
 }

@@ -10,9 +10,9 @@ import java.util.List;
 @Getter
 @ToString
 public class userError {
-    List<String> errors;
+    String error;
 
-    public userError(List<String> errors) {
-        this.errors = errors;
+    public userError(String error) {
+        this.error = error;
     }
 }

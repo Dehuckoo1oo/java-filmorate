@@ -92,7 +92,7 @@ public class UserService {
         if (usr.isPresent()) {
             return usr.get();
         } else {
-            throw new UserNotFoundException(new userError(List.of("user id=" + id + " не существует")).toString());
+            throw new UserNotFoundException("user id=" + id);
         }
     }
 }

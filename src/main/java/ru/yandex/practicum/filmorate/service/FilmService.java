@@ -124,7 +124,7 @@ public class FilmService {
         if (film.isPresent()) {
             return film.get();
         } else {
-            throw new FilmNotFoundException(new userError(List.of("user id=" + filmId + " не существует")).toString());
+            throw new FilmNotFoundException("user id=" + filmId);
         }
     }
 }

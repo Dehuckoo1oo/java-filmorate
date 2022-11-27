@@ -20,7 +20,7 @@ public class ErrorHandler {
     @ExceptionHandler({FilmNotFoundException.class})
     public ResponseEntity<Object> handleException(FilmNotFoundException e) {
         log.info(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new userError(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
@@ -45,6 +45,6 @@ public class ErrorHandler {
     @ExceptionHandler({UserNotFoundException.class})
     public ResponseEntity<Object> handleException(UserNotFoundException e) {
         log.info(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new userError(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 }

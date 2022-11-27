@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class User {
     private final Set<Long> friends = new HashSet<>();
 
     public void addFriend(Long id) {
-            friends.add(id);
+        friends.add(id);
     }
 
     public void deleteFriend(Long id) {
@@ -42,8 +43,8 @@ public class User {
         return values;
     }
 
-    public void setFriends (Set<Long> newFriends) {
-            friends.clear();
-            friends.addAll(newFriends);
+    public void setFriends(Set<Long> newFriends) {
+        friends.clear();
+        friends.addAll(newFriends);
     }
 }

@@ -8,14 +8,13 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.FilmMapper;
+import ru.yandex.practicum.filmorate.model.GenreMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @Primary
@@ -143,49 +142,36 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(Long id) {
         String sql = "SELECT * FROM PUBLIC.Films where id =?";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, id);
-        Long filmId = null;
-        String name;
-        name = null;
-        String description = null;
-        LocalDate releaseDate = null;
-        int duration = -1;
-        if (rs.next()) {
-            filmId = rs.getLong("id");
-            name = rs.getString("name");
-            description = rs.getString("description");
-            releaseDate = rs.getDate("releaseDate").toLocalDate();
-            duration = rs.getInt("duration");
-        }
-        Film film = new Film(filmId, name, description, releaseDate, duration, fillGenre(id), fillMPA(id));
-        fillLikes(film);
-        if (filmId != null) {
-            return Optional.of(film);
-        } else {
-            return Optional.empty();
-        }
+        Optional<Film> film = jdbcTemplate.query(sql, new FilmMapper(), id).stream().findFirst();
+        film.ifPresent(objFilm -> {
+            fillGenreByFilm(objFilm);
+            fillMPAByFilm(objFilm);
+            fillLikesByFilm(objFilm);
+        });
+        return film;
     }
 
     @Override
     public List<Film> get() {
         String sql = "SELECT * FROM PUBLIC.Films";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        List<Film> films = new ArrayList<>();
-        while (rs.next()) {
-            Long id = rs.getLong("id");
-            String name = rs.getString("name");
-            String description = rs.getString("description");
-            LocalDate releaseDate = rs.getDate("releaseDate").toLocalDate();
-            int duration = rs.getInt("duration");
-            Film film = new Film(id, name, description, releaseDate, duration, fillGenre(id), fillMPA(id));
-            fillLikes(film);
-            films.add(film);
+        List<Film> films = jdbcTemplate.query(sql, new FilmMapper());
+        Map<Long, List<Genre>> genres = getGenresOfFilms();
+        Map<Long, MPA> MPAs = getMPAOfFilms();
+        Map<Long, Set<Long>> likes = getLikesOfFilms();
+        if (!films.isEmpty()) {
+            films.forEach(film -> {
+                Long film_id = film.getId();
+                film.setGenres(genres.getOrDefault(film_id, new ArrayList<>()));
+                film.setMpa(MPAs.getOrDefault(film_id, null));
+                film.setLikes(likes.getOrDefault(film_id, new HashSet<>()));
+            });
         }
+
         return films;
     }
 
-    private void fillLikes(Film film) {
-        String sql = "SELECT user_like_id  FROM likes_film_list " +
+    private void fillLikesByFilm(Film film) {
+        String sql = "SELECT user_like_id FROM likes_film_list " +
                 "WHERE FILM_ID  =? ";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, film.getId());
         while (rs.next()) {
@@ -193,23 +179,23 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private List<Genre> fillGenre(Long id) {
+    private void fillGenreByFilm(Film film) {
         String sql = "SELECT distinct gf.GENRE_ID, g.GENRE_NAME FROM genre_film gf " +
                 "LEFT JOIN GENRE g ON gf.GENRE_ID = g.GENRE_ID " +
                 "WHERE gf.FILM_ID = ? ";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, id);
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, film.getId());
         List<Genre> genre = new ArrayList<>();
         while (rs.next()) {
             genre.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
         }
-        return genre;
+        film.setGenres(genre);
     }
 
-    private MPA fillMPA(Long id) {
-        String sql = "SELECT mf.MPA_ID, m.MPA_NAME  FROM MPA_FILMS mf " +
-                "LEFT JOIN MPA m ON mf.MPA_ID =m.MPA_ID " +
-                "WHERE mf.FILM_ID  =? ";
-        return jdbcTemplate.query(sql, new MPAMapper(), id).stream().findFirst().orElse(null);
+    private void fillMPAByFilm(Film film) {
+        String sql = "SELECT mf.MPA_ID, m.MPA_NAME FROM MPA_FILMS mf " +
+                "LEFT JOIN MPA m ON mf.MPA_ID = m.MPA_ID " +
+                "WHERE mf.FILM_ID = ? ";
+        film.setMpa(jdbcTemplate.query(sql, new MPAMapper(), film.getId()).stream().findFirst().orElse(null));
     }
 
     public Optional<Genre> getGenreById(int id) {
@@ -219,29 +205,63 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public Optional<MPA> getMPAById(int id) {
-        String sql = "SELECT MPA_ID, MPA_NAME  FROM MPA " +
-                "WHERE MPA_ID  =? ";
+        String sql = "SELECT MPA_ID, MPA_NAME FROM MPA " +
+                "WHERE MPA_ID = ? ";
         return jdbcTemplate.query(sql, new MPAMapper(), id).stream().findFirst();
     }
 
     public List<Genre> getGenre() {
         String sql = "SELECT distinct GENRE_ID, GENRE_NAME FROM GENRE ";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        List<Genre> genre = new ArrayList<>();
-        while (rs.next()) {
-            genre.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
-        }
-        return genre;
+        return jdbcTemplate.query(sql, new GenreMapper());
     }
 
     public List<MPA> getMPA() {
-        String sql = "SELECT MPA_ID, MPA_NAME  FROM MPA ";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        List<MPA> MPA = new ArrayList<>();
-        while (rs.next()) {
-            MPA.add(new MPA(rs.getInt("MPA_id"), rs.getString("MPA_name")));
-        }
-        return MPA;
+        String sql = "SELECT MPA_ID, MPA_NAME FROM MPA ";
+        return jdbcTemplate.query(sql, new MPAMapper());
     }
 
+    private Map<Long, List<Genre>> getGenresOfFilms() {
+        String sql = "SELECT distinct gf.FILM_ID, gf.GENRE_ID, g.GENRE_NAME FROM genre_film gf " +
+                "LEFT JOIN GENRE g ON gf.GENRE_ID = g.GENRE_ID ";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
+        Map<Long, List<Genre>> filmGenre = new HashMap<>();
+        while (rs.next()) {
+            Long film_id = rs.getLong("FILM_ID");
+            if (filmGenre.containsKey(film_id)) {
+                filmGenre.get(film_id).add(new Genre(rs.getInt("genre_id"),
+                        rs.getString("genre_name")));
+            } else {
+                filmGenre.put(film_id, List.of(new Genre(rs.getInt("genre_id"),
+                        rs.getString("genre_name"))));
+            }
+        }
+        return filmGenre;
+    }
+
+    private Map<Long, Set<Long>> getLikesOfFilms() {
+        String sql = "SELECT FILM_ID, user_like_id FROM likes_film_list ";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
+        Map<Long, Set<Long>> filmLikes = new HashMap<>();
+        while (rs.next()) {
+            Long film_id = rs.getLong("FILM_ID");
+            if (filmLikes.containsKey(film_id)) {
+                filmLikes.get(film_id).add(rs.getLong("user_like_id"));
+            } else {
+                filmLikes.put(rs.getLong("FILM_ID"), Set.of(rs.getLong("user_like_id")));
+            }
+        }
+        return filmLikes;
+    }
+
+    private Map<Long, MPA> getMPAOfFilms() {
+        String sql = "SELECT mf.FILM_ID, mf.MPA_ID, m.MPA_NAME FROM MPA_FILMS mf " +
+                "LEFT JOIN MPA m ON mf.MPA_ID = m.MPA_ID ";
+        Map<Long, MPA> MPAOfFilms = new HashMap<>();
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
+        while (rs.next()) {
+            MPAOfFilms.put(rs.getLong("FILM_ID"), new MPA(rs.getInt("MPA_id")
+                    , rs.getString("MPA_name")));
+        }
+        return MPAOfFilms;
+    }
 }

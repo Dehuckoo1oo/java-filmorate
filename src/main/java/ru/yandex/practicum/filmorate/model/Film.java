@@ -34,6 +34,11 @@ public class Film {
         return this;
     }
 
+    public void setLikes(Set<Long> newLikes) {
+        likes.clear();
+        likes.addAll(newLikes);
+    }
+
     public Film removeLike(Long id) {
         likes.remove(id);
         return this;

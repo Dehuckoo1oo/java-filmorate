@@ -51,23 +51,24 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
+        Long user_id = user.getId();
         String sqlQuery = "UPDATE PUBLIC.USERS " +
                 "SET EMAIL=?, LOGIN=?, NAME=?, BIRTHDAY=?" +
                 "WHERE ID=?;";
         jdbcTemplate.update(sqlQuery, user.getEmail(), user.getLogin(), user.getName(),
-                Date.valueOf(user.getBirthday()), user.getId());
-        String sqlQueryFriends = "INSERT INTO PUBLIC.FRIEND_LIST" +
+                Date.valueOf(user.getBirthday()), user_id);
+        String sqlQueryFriends = "MERGE INTO PUBLIC.FRIEND_LIST" +
                 "(USER_ID, FRIEND_ID)" +
                 "VALUES(?, ?);";
         String sqlQueryDelFriends = "DELETE FROM PUBLIC.FRIEND_LIST WHERE USER_ID=?";
         Set<Long> friends = user.getFriends();
         if (!friends.isEmpty()) {
-            jdbcTemplate.update(sqlQueryDelFriends, user.getId());
+            jdbcTemplate.update(sqlQueryDelFriends, user_id);
             for (Long friend : friends) {
-                jdbcTemplate.update(sqlQueryFriends, user.getId(), friend);
+                jdbcTemplate.update(sqlQueryFriends, user_id, friend);
             }
         } else {
-            jdbcTemplate.update(sqlQueryDelFriends, user.getId());
+            jdbcTemplate.update(sqlQueryDelFriends, user_id);
         }
         return user;
     }
@@ -79,36 +80,12 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-
-    /*@Override
-    public List<User> get() {
-        // метод принимает в виде аргумента строку запроса, преобразователь и аргумент — id пользователя
-        String sql = "SELECT * FROM PUBLIC.USERS";
-        List<User> users = jdbcTemplate.query(sql, new UserMapper());
-        users.forEach(this::fillFriends);
-        return users;
-    }*/
-
-
     @Override
     public List<User> get() {
         String sql = "SELECT * FROM PUBLIC.USERS";
         List<User> users = jdbcTemplate.query(sql, new UserMapper());
-        String sqlFriend = "SELECT user_id,friend_id FROM PUBLIC.friend_list";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlFriend);
-        Map<Long, Set<Long>> friends = new HashMap<>();
-        while (rs.next()) {
-            Long userId = rs.getLong("user_id");
-            Long friendId = rs.getLong("friend_id");
-            if (friends.containsKey(userId)) {
-                friends.get(userId).add(friendId);
-            } else {
-                Set<Long> friendEntity = new HashSet<>();
-                friendEntity.add(friendId);
-                friends.put(userId, friendEntity);
-            }
-        }
-        users.forEach(user -> user.setFriends(friends.getOrDefault(user.getId(), new HashSet<>())));
+        Map<Long, Set<Long>> friendByUsers = getAllFriends();
+        users.forEach(user -> user.setFriends(friendByUsers.getOrDefault(user.getId(), new HashSet<>())));
         return users;
     }
 
@@ -126,5 +103,23 @@ public class UserDbStorage implements UserStorage {
         while (rs.next()) {
             user.addFriend(rs.getLong("friend_id"));
         }
+    }
+
+    private Map<Long, Set<Long>> getAllFriends() {
+        String sqlFriend = "SELECT user_id,friend_id FROM PUBLIC.friend_list";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlFriend);
+        Map<Long, Set<Long>> friends = new HashMap<>();
+        while (rs.next()) {
+            Long userId = rs.getLong("user_id");
+            Long friendId = rs.getLong("friend_id");
+            if (friends.containsKey(userId)) {
+                friends.get(userId).add(friendId);
+            } else {
+                Set<Long> friendEntity = new HashSet<>();
+                friendEntity.add(friendId);
+                friends.put(userId, friendEntity);
+            }
+        }
+        return friends;
     }
 }

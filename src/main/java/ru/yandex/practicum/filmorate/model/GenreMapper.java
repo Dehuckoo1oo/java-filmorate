@@ -8,6 +8,6 @@ import java.sql.SQLException;
 public class GenreMapper implements RowMapper<Genre> {
     @Override
     public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getInt("GENRE_ID"),rs.getString("GENRE_NAME"));
+        return new Genre(rs.getInt("GENRE_ID"), rs.getString("GENRE_NAME"));
     }
 }

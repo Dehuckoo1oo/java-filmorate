@@ -1,13 +1,10 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.model.MPAMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

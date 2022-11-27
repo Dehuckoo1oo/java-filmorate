@@ -7,13 +7,13 @@ import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import javax.validation.constraints.Positive;
 import java.util.*;
 
 @Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
+
     @Autowired
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;

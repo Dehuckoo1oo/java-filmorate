@@ -8,6 +8,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.Exception.ReleaseDateValidationException;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
 
 import javax.validation.ValidationException;
@@ -46,5 +47,11 @@ public class ErrorHandler {
     public ResponseEntity<Object> handleException(UserNotFoundException e) {
         log.info(e.getMessage());
         return new ResponseEntity<>(new userError(e.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({ReleaseDateValidationException.class})
+    public ResponseEntity<Object> handleException(ReleaseDateValidationException e) {
+        log.info(e.getMessage());
+        return new ResponseEntity<>(new filmError(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 }

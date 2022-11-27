@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.annotation.ApplicationScope;
 import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.Exception.ReleaseDateValidationException;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.controller.userError;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -115,7 +116,7 @@ public class FilmService {
 
     private void checkRelease(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата выхода фильма некорректна");
+            throw new ReleaseDateValidationException("releaseDate =" + film.getReleaseDate());
         }
     }
 

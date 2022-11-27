@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.Exception.ReleaseDateValidationException;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
@@ -9,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
-import javax.validation.ValidationException;
 import javax.validation.Validator;
 import java.time.LocalDate;
 import java.util.*;
@@ -41,9 +41,9 @@ class FilmTest {
         FilmController filmcontroller = new FilmController(
                 new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
 
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
+        final ReleaseDateValidationException exception = assertThrows(
+                ReleaseDateValidationException.class,
                 () -> filmcontroller.addFilm(film));
-        assertEquals("Дата выхода фильма некорректна", exception.getMessage());
+        assertEquals("releaseDate =1895-12-27", exception.getMessage());
     }
 }

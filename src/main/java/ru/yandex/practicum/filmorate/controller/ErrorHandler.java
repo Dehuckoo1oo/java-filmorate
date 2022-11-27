@@ -18,19 +18,19 @@ import javax.validation.ValidationException;
 public class ErrorHandler {
 
     @ExceptionHandler({FilmNotFoundException.class})
-    public ResponseEntity<String> handleException(FilmNotFoundException e) {
+    public ResponseEntity<Object> handleException(FilmNotFoundException e) {
         log.info(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
-    public ResponseEntity<String> handleException(MethodArgumentNotValidException e) {
+    public ResponseEntity<Object> handleException(MethodArgumentNotValidException e) {
         log.info(e.getMessage());
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
     @ExceptionHandler({ValidationException.class})
-    public ResponseEntity<String> handleException(ValidationException e) {
+    public ResponseEntity<Object> handleException(ValidationException e) {
         log.info(e.getMessage());
         return ResponseEntity.badRequest().body(e.getMessage());
     }
@@ -43,7 +43,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({UserNotFoundException.class})
-    public ResponseEntity<String> handleException(UserNotFoundException e) {
+    public ResponseEntity<Object> handleException(UserNotFoundException e) {
         log.info(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }

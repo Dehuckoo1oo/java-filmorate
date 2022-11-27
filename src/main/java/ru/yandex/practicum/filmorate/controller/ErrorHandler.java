@@ -52,6 +52,6 @@ public class ErrorHandler {
     @ExceptionHandler({ReleaseDateValidationException.class})
     public ResponseEntity<Object> handleException(ReleaseDateValidationException e) {
         log.info(e.getMessage());
-        return new ResponseEntity<>(new filmError(e.getMessage()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new filmError(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

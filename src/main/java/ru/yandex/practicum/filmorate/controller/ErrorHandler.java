@@ -41,4 +41,10 @@ public class ErrorHandler {
         System.out.println(name + " parameter is missing");
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler({UserNotFoundException.class})
+    public ResponseEntity<String> handleException(UserNotFoundException e) {
+        log.info(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
 }

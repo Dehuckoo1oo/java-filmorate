@@ -39,6 +39,6 @@ public class ErrorHandler {
     public ResponseEntity<Object> handleMissingParams(MissingServletRequestParameterException ex) {
         String name = ex.getParameterName();
         System.out.println(name + " parameter is missing");
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.controller.userError;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -12,7 +13,6 @@ import java.util.*;
 @Slf4j
 @Service
 public class UserService {
-
     private final UserStorage userStorage;
 
     @Autowired
@@ -21,11 +21,11 @@ public class UserService {
     }
 
     public User addFriends(Long id1, Long id2) {
-        User usr1 = checkUser(id1);
-        User usr2 = checkUser(id2);
-        usr1.addFriend(usr2.getId(),true);
-        usr2.addFriend(usr1.getId(),false);
-        return usr1;
+        User user = checkUser(id1);
+        User user2 = checkUser(id2);
+        user.addFriend(user2.getId());
+        userStorage.update(user);
+        return user;
     }
 
     public User deleteFriends(Long id1, Long id2) {
@@ -33,23 +33,17 @@ public class UserService {
         User usr2 = checkUser(id2);
         usr1.deleteFriend(usr2.getId());
         usr2.deleteFriend(usr1.getId());
+        userStorage.update(usr1);
+        userStorage.update(usr2);
         return usr1;
     }
 
     public List<User> mutualFriends(Long id1, Long id2) {
         User usr1 = checkUser(id1);
         User usr2 = checkUser(id2);
-        ArrayList<Long> friendList1 = new ArrayList<>();
-        ArrayList<Long> friendList2 = new ArrayList<>();
-        usr1.getFriends().entrySet().stream()
-                .filter(Map.Entry::getValue)
-                .forEach(entity -> friendList1.add(entity.getKey()));
-        usr2.getFriends().entrySet().stream()
-                .filter(Map.Entry::getValue)
-                .forEach(entity -> friendList2.add(entity.getKey()));
         List<User> matualFriends = new ArrayList<>();
-        friendList1.stream()
-                .filter(friendList2::contains)
+        usr1.getFriends().stream()
+                .filter(usr2.getFriends()::contains)
                 .forEach(value -> matualFriends.add(getUserById(value)));
         return matualFriends;
     }
@@ -57,9 +51,7 @@ public class UserService {
     public List<User> getFriendList(Long userId) {
         User user = checkUser(userId);
         List<User> friendsList = new ArrayList<>();
-        user.getFriends().entrySet().stream()
-                .filter(Map.Entry::getValue)
-                .forEach(value -> friendsList.add(getUserById(value.getKey())));
+        user.getFriends().forEach(value -> friendsList.add(getUserById(value)));
         return friendsList;
     }
 
@@ -81,7 +73,7 @@ public class UserService {
         return userStorage.create(user);
     }
 
-    public ArrayList<User> get() {
+    public List<User> get() {
         return userStorage.get();
     }
 
@@ -100,7 +92,7 @@ public class UserService {
         if (usr.isPresent()) {
             return usr.get();
         } else {
-            throw new UserNotFoundException("Пользователь не найден");
+            throw new UserNotFoundException("user id=" + id);
         }
     }
 }

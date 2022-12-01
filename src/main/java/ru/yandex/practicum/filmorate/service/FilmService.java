@@ -3,10 +3,15 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.annotation.ApplicationScope;
 import ru.yandex.practicum.filmorate.Exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.Exception.ReleaseDateValidationException;
 import ru.yandex.practicum.filmorate.Exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.controller.userError;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -14,7 +19,9 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import javax.validation.Validation;
 import javax.validation.ValidationException;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +69,7 @@ public class FilmService {
     public Film addLike(Long filmId, Long userId) {
         Film film = checkFilm(filmId);
         Optional<User> user = userStorage.getUserById(userId);
-        if(user.isEmpty()){
+        if (user.isEmpty()) {
             throw new UserNotFoundException("Пользователь не найден");
         }
         film.like(user.get().getId());
@@ -73,7 +80,7 @@ public class FilmService {
     public Film removeLike(Long filmId, Long userId) {
         Film film = checkFilm(filmId);
         Optional<User> user = userStorage.getUserById(userId);
-        if(user.isEmpty()){
+        if (user.isEmpty()) {
             throw new UserNotFoundException("Пользователь не найден");
         }
         film.removeLike(user.get().getId());
@@ -87,22 +94,38 @@ public class FilmService {
         return topFilms;
     }
 
-    public Optional<Film> getFilmById(Long id) {
-        return filmStorage.getFilmById(id);
+    public Film getFilmById(Long id) {
+        return checkFilm(id);
+    }
+
+    public Optional<Genre> getGenreById(int id) {
+        return filmStorage.getGenreById(id);
+    }
+
+    public Optional<MPA> getMPAById(int id) {
+        return filmStorage.getMPAById(id);
+    }
+
+    public List<Genre> getGenre() {
+        return filmStorage.getGenre();
+    }
+
+    public List<MPA> getMPA() {
+        return filmStorage.getMPA();
     }
 
     private void checkRelease(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата выхода фильма некорректна");
+            throw new ReleaseDateValidationException("releaseDate =" + film.getReleaseDate());
         }
     }
 
-    private Film checkFilm(Long filmId) {
+    private Film checkFilm(@NotNull(message = "Фильма с таким id не существует") Long filmId) {
         Optional<Film> film = filmStorage.getFilmById(filmId);
         if (film.isPresent()) {
             return film.get();
         } else {
-            throw new FilmNotFoundException("Данный фильм не найден");
+            throw new FilmNotFoundException("user id=" + filmId);
         }
     }
 }

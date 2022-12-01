@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -53,8 +55,7 @@ public class FilmController {
 
     @GetMapping("/films/{filmId}")
     public ResponseEntity<Film> findFilm(@PathVariable Long filmId) {
-        Optional<Film> entity = filmService.getFilmById(filmId);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return ResponseEntity.ok(filmService.getFilmById(filmId));
     }
 
     @PostMapping("/films")
@@ -63,7 +64,7 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film){
+    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
         Long idNewFilm = film.getId();
         if (idNewFilm == null) {
             return ResponseEntity.ok(filmService.create(film));
@@ -72,5 +73,27 @@ public class FilmController {
                     .map(ResponseEntity::ok)
                     .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
+    }
+
+    @GetMapping("/genres/{id}")
+    public ResponseEntity<Genre> getGenreById(@PathVariable int id) {
+        Optional<Genre> entity = filmService.getGenreById(id);
+        return entity.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/mpa/{id}")
+    public ResponseEntity<MPA> getMPAById(@PathVariable int id) {
+        Optional<MPA> entity = filmService.getMPAById(id);
+        return entity.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/genres")
+    public List<Genre> getGenre() {
+        return filmService.getGenre();
+    }
+
+    @GetMapping("/mpa")
+    public List<MPA> getMPA() {
+        return filmService.getMPA();
     }
 }
